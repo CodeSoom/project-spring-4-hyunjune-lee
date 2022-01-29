@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,14 +35,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("CardController 클래스는")
 @MockBean(JpaMetamodelMappingContext.class)
 class CardControllerTest {
+    private final Long existId = 0L;
+    private final Long notExistId = 1000L;
+    private Card card;
+    private String cardContent;
+    private Card updatedCard;
+    private String updatedCardContent;
+    private Card invalidCard;
+    private String invalidCardContent;
     private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
-    Card card;
-    String cardContent;
-    Card invalidCard;
-    String invalidCardContent;
-
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -52,16 +54,25 @@ class CardControllerTest {
     void setUp() throws JsonProcessingException {
 
         card = Card.builder()
-                .id(0L)
-                .question("question")
-                .answer("answer")
+                .id(existId)
+                .question("What is the data structure using LIFO approach?")
+                .answer("stack")
                 .createdDate(LocalDateTime.now())
                 .modifiedDate(LocalDateTime.now())
                 .build();
         cardContent = objectMapper.writeValueAsString(card);
 
+        updatedCard = Card.builder()
+                .id(existId)
+                .question("What is the data structure using FIFO approach?")
+                .answer("queue")
+                .createdDate(card.getCreatedDate())
+                .modifiedDate(LocalDateTime.now())
+                .build();
+        updatedCardContent = objectMapper.writeValueAsString(updatedCard);
+
         invalidCard = Card.builder()
-                .id(0L)
+                .id(existId)
                 .question("")
                 .answer("answer")
                 .createdDate(LocalDateTime.now())
@@ -69,36 +80,37 @@ class CardControllerTest {
                 .build();
         invalidCardContent = objectMapper.writeValueAsString(invalidCard);
 
-
         given(cardService.getCards()).willReturn(List.of(card));
 
         given(cardService.createCard(any(Card.class))).willReturn(card);
 
+        given(cardService.getCard(existId)).willReturn(card);
 
+        given(cardService.getCard(notExistId)).willThrow(new CardNotFoundException(notExistId));
+
+        given(cardService.updateCard(eq(existId), any(Card.class)))
+                .will(invocation -> {
+                    Long id = invocation.getArgument(0);
+                    Card card = invocation.getArgument(1);
+                    return Card.builder()
+                            .id(id)
+                            .question(card.getQuestion())
+                            .answer(card.getAnswer())
+                            .build();
+                });
+
+        given(cardService.updateCard(eq(notExistId), any(Card.class))).willThrow(new CardNotFoundException(notExistId));
 
     }
 
-    @Nested
-    @DisplayName("GET /cards")
-    class Describe_request_get_to_cards_path {
-
-        @Test
-        @DisplayName("저장되어 있는 card 리스트를 응답합니다.")
-        void it_responses_card_list() throws Exception {
-            mockMvc.perform(get("/cards"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("question")));
-        }
-    }
-
+    //[Create]
     @Nested
     @DisplayName("POST /cards")
-    //TODO 유효한 속성하고 유효하지 않은 속성으로 나누기 -> CardDto 만들고 @Valid 추가해서 진행
-    class Describe_request_post_to_cards_id_path{
+    class Describe_request_post_to_cards_path {
 
         @Nested
         @DisplayName("유효한 속성을 가진 card가 주어지면")
-        class Context_with_a_valid_attributes{
+        class Context_with_a_valid_attributes {
 
             @Test
             @DisplayName("생성한 card를 응답합니다.")
@@ -114,10 +126,10 @@ class CardControllerTest {
 
         @Nested
         @DisplayName("유효하지 않은 속성을 가진 card가 주어지면")
-        class Context_with_a_invalid_attributes{
+        class Context_with_a_invalid_attributes {
 
             @Test
-            @DisplayName("생성한 card를 응답합니다.")
+            @DisplayName("BAD_REQUEST(400)를 응답합니다.")
             void it_responses_bad_request() throws Exception {
                 mockMvc.perform(post("/cards")
                                 .accept(MediaType.APPLICATION_JSON)
@@ -126,58 +138,108 @@ class CardControllerTest {
                         .andExpect(status().isBadRequest());
             }
         }
-
     }
 
+    //[Read]
+    @Nested
+    @DisplayName("GET /cards")
+    class Describe_request_get_to_cards_path {
+
+        @Test
+        @DisplayName("저장되어 있는 card 리스트를 응답합니다.")
+        void it_responses_card_list() throws Exception {
+            mockMvc.perform(get("/cards"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("stack")));
+        }
+    }
+
+    //[Read]
     @Nested
     @DisplayName("GET /cards/{id}")
-    class Describe_request_get_to_cards_id_path{
+    class Describe_request_get_to_cards_id_path {
 
         @Nested
         @DisplayName("만약 조회하는 id의 card가 존재한다면")
         class Context_with_exist_id {
-            private final Long existId = 0L;
-
-            @BeforeEach
-            void setUp(){
-                given(cardService.getCard(existId)).willReturn(card);
-            }
 
             @Test
             @DisplayName("해당하는 card를 응답합니다.")
             void it_responses_card_with_exist_id() throws Exception {
                 mockMvc.perform(
-                        get("/cards/0")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
+                                get("/cards/" + existId)
+                                        .accept(MediaType.APPLICATION_JSON)
+                        )
                         .andExpect(status().isOk())
-                        .andExpect(content().string(containsString("question")));
+                        .andExpect(content().string(containsString("stack")));
             }
         }
 
         @Nested
         @DisplayName("만약 조회하는 id의 card가 존재하지 않는다면")
         class Context_with_not_exist_id {
-            private final Long notExistId = 100L;
-
-            @BeforeEach
-            void setUp(){
-                given(cardService.getCard(notExistId)).willThrow(new CardNotFoundException(notExistId));
-            }
 
             @Test
             @DisplayName("NOT_FOUND(404)를 응답합니다.")
-            void it_responses_card_with_exist_id() throws Exception {
+            void it_responses_not_found() throws Exception {
                 mockMvc.perform(
-                                get("/cards/100")
+                                get("/cards/" + notExistId)
                                         .accept(MediaType.APPLICATION_JSON)
                         )
                         .andExpect(status().isNotFound());
             }
         }
-
-
     }
 
+    //[Update]
+    @Nested
+    @DisplayName("POST /cards/{id}")
+    class Describe_request_post_to_cards_id_path {
 
+        @Nested
+        @DisplayName("만약 조회하는 id가 존재하고 유효한 속성을 가진 card가 주어지면")
+        class Context_with_exist_id_and_valid_attributes {
+
+            @Test
+            @DisplayName("수정된 card를 응답합니다.")
+            void it_responses_updated_card() throws Exception {
+                mockMvc.perform(post("/cards/" + existId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(updatedCardContent))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string(containsString("queue")));
+            }
+        }
+
+        @Nested
+        @DisplayName("만약 조회하는 id가 존재하지 않고 유효한 속성을 가진 card가 주어지면")
+        class Context_with_not_exist_id_and_valid_attributes {
+
+            @Test
+            @DisplayName("NOT_FOUND(404)를 응답합니다.")
+            void it_responses_not_found() throws Exception {
+                mockMvc.perform(post("/cards/" + notExistId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(updatedCardContent))
+                        .andExpect(status().isNotFound());
+            }
+        }
+
+        @Nested
+        @DisplayName("유효하지 않은 속성을 가진 card가 주어지면")
+        class Context_with_a_invalid_attributes {
+
+            @Test
+            @DisplayName("BAD_REQUEST(400)를 응답합니다.")
+            void it_responses_bad_request() throws Exception {
+                mockMvc.perform(post("/cards/" + existId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(invalidCardContent))
+                        .andExpect(status().isBadRequest());
+            }
+        }
+    }
 }

@@ -33,20 +33,26 @@ public class CardController {
         this.cardService = cardService;
     }
 
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Card create(@RequestBody @Valid Card card) {
+        return cardService.createCard(card);
+    }
+
     @GetMapping
     public List<Card> list() {
         return cardService.getCards();
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Card create(@RequestBody @Valid Card card){
-        return cardService.createCard(card);
+    @GetMapping("{id}")
+    public Card detail(@PathVariable Long id) {
+        return cardService.getCard(id);
     }
 
-    @GetMapping("{id}")
-    public Card detail(@PathVariable Long id){
-        return cardService.getCard(id);
+    @PostMapping("{id}")
+    public Card update(@PathVariable Long id,
+                       @RequestBody @Valid Card card) {
+        return cardService.updateCard(id, card);
     }
 
 }

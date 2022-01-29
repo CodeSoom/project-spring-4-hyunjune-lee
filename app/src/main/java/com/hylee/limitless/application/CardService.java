@@ -29,4 +29,11 @@ public class CardService {
     public Card getCard(Long id) {
         return cardRepository.findById(id).orElseThrow(() -> new CardNotFoundException(id));
     }
+
+    public Card updateCard(Long id, Card source) {
+        Card target = getCard(id);
+        target.changeWith(source);
+
+        return target;
+    }
 }

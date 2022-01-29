@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Getter
 @SuperBuilder
 @EntityListeners(AuditingEntityListener.class)
-public class Card extends BaseTimeEntity{
+public class Card extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
@@ -27,7 +27,8 @@ public class Card extends BaseTimeEntity{
 
     private String answer;
 
-    public Card(){}
+    public Card() {
+    }
 
     public Card(Long id, String question, String answer, LocalDateTime createdDate, LocalDateTime modifiedDate) {
         this.id = id;
@@ -36,7 +37,6 @@ public class Card extends BaseTimeEntity{
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
     }
-
 
     public Card(Long id, String question, String answer) {
         this.id = id;
@@ -57,4 +57,10 @@ public class Card extends BaseTimeEntity{
                 ", answer='" + answer + '\'' +
                 '}';
     }
+
+    public void changeWith(Card source) {
+        this.question = source.question;
+        this.answer = source.answer;
+    }
+
 }
