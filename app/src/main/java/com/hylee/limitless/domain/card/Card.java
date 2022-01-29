@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,6 +22,7 @@ public class Card extends BaseTimeEntity{
     @GeneratedValue
     private Long id;
 
+    @NotEmpty
     private String question;
 
     private String answer;

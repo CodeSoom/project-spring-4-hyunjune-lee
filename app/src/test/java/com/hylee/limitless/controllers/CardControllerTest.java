@@ -35,8 +35,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CardControllerTest {
     private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    String cardContent;
     Card card;
+    String cardContent;
+    Card invalidCard;
+    String invalidCardContent;
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,6 +49,7 @@ class CardControllerTest {
 
     @BeforeEach
     void setUp() throws JsonProcessingException {
+
         card = Card.builder()
                 .id(0L)
                 .question("question")
@@ -53,8 +57,24 @@ class CardControllerTest {
                 .createdDate(LocalDateTime.now())
                 .modifiedDate(LocalDateTime.now())
                 .build();
-        given(cardService.getCards()).willReturn(List.of(card));
         cardContent = objectMapper.writeValueAsString(card);
+
+        invalidCard = Card.builder()
+                .id(0L)
+                .question("")
+                .answer("answer")
+                .createdDate(LocalDateTime.now())
+                .modifiedDate(LocalDateTime.now())
+                .build();
+        invalidCardContent = objectMapper.writeValueAsString(invalidCard);
+
+
+        given(cardService.getCards()).willReturn(List.of(card));
+
+        given(cardService.createCard(any(Card.class))).willReturn(card);
+
+
+
     }
 
     @Nested
@@ -79,11 +99,6 @@ class CardControllerTest {
         @DisplayName("유효한 속성을 가진 card가 주어지면")
         class Context_with_a_valid_attributes{
 
-            @BeforeEach
-            void setUp(){
-                given(cardService.createCard(any(Card.class))).willReturn(card);
-            }
-
             @Test
             @DisplayName("생성한 card를 응답합니다.")
             void it_responses_created_card() throws Exception {
@@ -95,6 +110,22 @@ class CardControllerTest {
                         .andExpect(content().string(cardContent));
             }
         }
+
+        @Nested
+        @DisplayName("유효하지 않은 속성을 가진 card가 주어지면")
+        class Context_with_a_invalid_attributes{
+
+            @Test
+            @DisplayName("생성한 card를 응답합니다.")
+            void it_responses_bad_request() throws Exception {
+                mockMvc.perform(post("/cards")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(invalidCardContent))
+                        .andExpect(status().isBadRequest());
+            }
+        }
+
     }
 
     @Nested
