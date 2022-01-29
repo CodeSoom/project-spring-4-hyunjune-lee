@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hylee.limitless.application.CardService;
 import com.hylee.limitless.domain.card.Card;
+import com.hylee.limitless.errors.CardNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -153,6 +154,28 @@ class CardControllerTest {
                         .andExpect(content().string(containsString("question")));
             }
         }
+
+        @Nested
+        @DisplayName("만약 조회하는 id의 card가 존재하지 않는다면")
+        class Context_with_not_exist_id {
+            private final Long notExistId = 100L;
+
+            @BeforeEach
+            void setUp(){
+                given(cardService.getCard(notExistId)).willThrow(new CardNotFoundException(notExistId));
+            }
+
+            @Test
+            @DisplayName("NOT_FOUND(404)를 응답합니다.")
+            void it_responses_card_with_exist_id() throws Exception {
+                mockMvc.perform(
+                                get("/cards/100")
+                                        .accept(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isNotFound());
+            }
+        }
+
 
     }
 
