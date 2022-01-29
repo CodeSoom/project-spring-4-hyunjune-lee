@@ -30,6 +30,8 @@ dependencies {
     // AssertJ
     testImplementation "org.assertj:assertj-core:3.20.2"
 
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:30.1.1-jre'
