@@ -2,9 +2,14 @@ package com.hylee.limitless.controllers;
 
 import com.hylee.limitless.application.CardService;
 import com.hylee.limitless.domain.card.Card;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,6 +35,17 @@ public class CardController {
     @GetMapping
     public List<Card> list() {
         return cardService.getCards();
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Card create(@RequestBody Card card){
+        return cardService.createCard(card);
+    }
+
+    @GetMapping("{id}")
+    public Card detail(@PathVariable Long id){
+        return cardService.getCard(id);
     }
 
 }
