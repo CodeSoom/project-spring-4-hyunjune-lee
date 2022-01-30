@@ -5,6 +5,7 @@ import com.hylee.limitless.domain.card.Card;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,7 +50,7 @@ public class CardController {
         return cardService.getCard(id);
     }
 
-    @PostMapping("{id}")
+    @PatchMapping("{id}")
     public Card update(@PathVariable Long id,
                        @RequestBody @Valid Card card) {
         return cardService.updateCard(id, card);

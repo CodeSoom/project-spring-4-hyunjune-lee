@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -193,8 +194,8 @@ class CardControllerTest {
 
     //[Update]
     @Nested
-    @DisplayName("POST /cards/{id}")
-    class Describe_request_post_to_cards_id_path {
+    @DisplayName("PATCH /cards/{id}")
+    class Describe_request_patch_to_cards_id_path {
 
         @Nested
         @DisplayName("만약 조회하는 id가 존재하고 유효한 속성을 가진 card가 주어지면")
@@ -203,7 +204,7 @@ class CardControllerTest {
             @Test
             @DisplayName("수정된 card를 응답합니다.")
             void it_responses_updated_card() throws Exception {
-                mockMvc.perform(post("/cards/" + existId)
+                mockMvc.perform(patch("/cards/" + existId)
                                 .accept(MediaType.APPLICATION_JSON)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(updatedCardContent))
@@ -219,7 +220,7 @@ class CardControllerTest {
             @Test
             @DisplayName("NOT_FOUND(404)를 응답합니다.")
             void it_responses_not_found() throws Exception {
-                mockMvc.perform(post("/cards/" + notExistId)
+                mockMvc.perform(patch("/cards/" + notExistId)
                                 .accept(MediaType.APPLICATION_JSON)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(updatedCardContent))
@@ -234,7 +235,7 @@ class CardControllerTest {
             @Test
             @DisplayName("BAD_REQUEST(400)를 응답합니다.")
             void it_responses_bad_request() throws Exception {
-                mockMvc.perform(post("/cards/" + existId)
+                mockMvc.perform(patch("/cards/" + existId)
                                 .accept(MediaType.APPLICATION_JSON)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(invalidCardContent))
@@ -242,4 +243,8 @@ class CardControllerTest {
             }
         }
     }
+
+//    //[Delete]
+//    @Nested
+//    @DisplayName("DELETE")
 }
