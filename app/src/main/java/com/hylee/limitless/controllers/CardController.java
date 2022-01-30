@@ -4,6 +4,7 @@ import com.hylee.limitless.application.CardService;
 import com.hylee.limitless.domain.card.Card;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,6 +55,12 @@ public class CardController {
     public Card update(@PathVariable Long id,
                        @RequestBody @Valid Card card) {
         return cardService.updateCard(id, card);
+    }
+
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Card delete(@PathVariable Long id) {
+        return cardService.deleteCard(id);
     }
 
 }

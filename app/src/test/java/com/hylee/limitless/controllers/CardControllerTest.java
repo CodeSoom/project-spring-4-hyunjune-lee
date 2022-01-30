@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -102,6 +103,8 @@ class CardControllerTest {
 
         given(cardService.updateCard(eq(notExistId), any(Card.class))).willThrow(new CardNotFoundException(notExistId));
 
+        given(cardService.deleteCard(notExistId)).willThrow(new CardNotFoundException(notExistId));
+
     }
 
     //[Create]
@@ -130,7 +133,7 @@ class CardControllerTest {
         class Context_with_a_invalid_attributes {
 
             @Test
-            @DisplayName("BAD_REQUEST(400)를 응답합니다.")
+            @DisplayName("Bad_Request(400)를 응답합니다.")
             void it_responses_bad_request() throws Exception {
                 mockMvc.perform(post("/cards")
                                 .accept(MediaType.APPLICATION_JSON)
@@ -181,7 +184,7 @@ class CardControllerTest {
         class Context_with_not_exist_id {
 
             @Test
-            @DisplayName("NOT_FOUND(404)를 응답합니다.")
+            @DisplayName("Not_Found(404)를 응답합니다.")
             void it_responses_not_found() throws Exception {
                 mockMvc.perform(
                                 get("/cards/" + notExistId)
@@ -218,7 +221,7 @@ class CardControllerTest {
         class Context_with_not_exist_id_and_valid_attributes {
 
             @Test
-            @DisplayName("NOT_FOUND(404)를 응답합니다.")
+            @DisplayName("Not_Found(404)를 응답합니다.")
             void it_responses_not_found() throws Exception {
                 mockMvc.perform(patch("/cards/" + notExistId)
                                 .accept(MediaType.APPLICATION_JSON)
@@ -233,7 +236,7 @@ class CardControllerTest {
         class Context_with_a_invalid_attributes {
 
             @Test
-            @DisplayName("BAD_REQUEST(400)를 응답합니다.")
+            @DisplayName("Bad_Request(400)를 응답합니다.")
             void it_responses_bad_request() throws Exception {
                 mockMvc.perform(patch("/cards/" + existId)
                                 .accept(MediaType.APPLICATION_JSON)
@@ -244,7 +247,39 @@ class CardControllerTest {
         }
     }
 
-//    //[Delete]
-//    @Nested
-//    @DisplayName("DELETE")
+    //[Delete]
+    @Nested
+    @DisplayName("Delete /cards/{id}")
+    class Describe_request_delete_to_cards_id_path {
+
+        @Nested
+        @DisplayName("만약 조회하는 id의 card가 존재한다면")
+        class Context_with_exist_id {
+
+            @Test
+            @DisplayName("No_Content(204)를 응답합니다.")
+            void it_responses_no_content() throws Exception {
+                mockMvc.perform(
+                                delete("/cards/" + existId)
+                                        .accept(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isNoContent());
+            }
+        }
+
+        @Nested
+        @DisplayName("만약 조회하는 id의 card가 존재하지 않는다면")
+        class Context_with_not_exist_id {
+
+            @Test
+            @DisplayName("Not_Found(404)를 응답합니다.")
+            void it_responses_not_found() throws Exception {
+                mockMvc.perform(
+                                delete("/cards/" + notExistId)
+                                        .accept(MediaType.APPLICATION_JSON)
+                        )
+                        .andExpect(status().isNotFound());
+            }
+        }
+    }
 }

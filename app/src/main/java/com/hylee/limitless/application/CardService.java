@@ -36,4 +36,10 @@ public class CardService {
 
         return target;
     }
+
+    public Card deleteCard(Long id) {
+        Card card = getCard(id);
+        cardRepository.delete(card);
+        return card;
+    }
 }
