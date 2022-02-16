@@ -46,6 +46,7 @@ class CardControllerTest {
     private Card invalidCard;
     private String invalidCardContent;
     private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
     @Autowired
     private MockMvc mockMvc;
 
